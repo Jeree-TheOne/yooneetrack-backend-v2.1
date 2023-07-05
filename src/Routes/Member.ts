@@ -6,6 +6,6 @@ const router = Router();
 router.post('/', MemberController.add)
 router.put('/:id', MemberController.update)
 router.put('/block/:id', MemberController.block)
-router.get('/activate/:id', MemberController.activate)
+router.get('/activate/:workspaceId/:id', MemberController.activate)
 
 export default router

@@ -6,7 +6,7 @@ const router = Router();
 router.get('/:id', WorkspaceController.selectOne)
 router.get('/', WorkspaceController.selectAll)
 router.post('/', WorkspaceController.create)
-router.put('/:id', WorkspaceController.update)
-router.delete('/:id', WorkspaceController.delete)
+router.put('/', WorkspaceController.update)
+router.delete('/', WorkspaceController.delete)
 
 export default router

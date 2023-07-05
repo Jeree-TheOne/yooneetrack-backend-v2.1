@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:AlexJerEe125897new@db.zrhmlskiahvzxhvhxhwt.supabase.co:5432/postgres"
 }
 
 model User {
@@ -34,10 +34,11 @@ model User {
   personalTasks PersonalTask[]
 }
 
-model Role {
-  id      String   @id @default(uuid())
-  name    String   @unique
-  members Member[]
+enum Role {
+  CREATOR
+  ADMIN
+  USER
+  VIEWER
 }
 
 model Token {
@@ -83,8 +84,7 @@ model Member {
   isBlocked   Boolean   @default(false)
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String    
-  role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId      String    
+  role        Role      @default(USER)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String    
 }
@@ -140,7 +140,6 @@ model Comment {
 
 model SpentTime {
   id               String   @id @default(uuid())
-  currentTimeSpent Int 
   spentTime        Int
   createdAt        DateTime @default(now())
   user             User     @relation(fields: [userId], references: [id])

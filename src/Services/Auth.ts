@@ -1,5 +1,5 @@
 import ApiError from "../Exceptions/ApiError"
-import { db } from "../utils/db"
+import { db } from "../Utils/db"
 import User from "../Models/User"
 import TokenData from "../Models/TokenData"
 
@@ -11,7 +11,14 @@ import bcrypt from "bcrypt"
 import { v4 as uuid } from "uuid"
 import UserWithPassword from "../Models/UserWithPassword"
 
+/** Service for work with Authentication */
 class AuthService {
+
+  /**
+   * Registration method
+   * @param {string} email users email
+   * @param {string} password users password
+   */
   async registration(email: string, password: string): Promise<void> {
     const candidate = await db.user.findFirst({ 
       where: { email }
@@ -31,9 +38,16 @@ class AuthService {
       }
     })
 
-    await EmailService.sendActivationMail(email, activationLink)
+    EmailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/activate/${activationLink}`)
   }
 
+  /**
+   * Login method
+   * @param {string} login user's login (email or login) 
+   * @param {string} password user's password 
+   * @param {string} userAgent user's user agent 
+   * @returns {TokenData} tokenized user info
+   */
   async login(login: string, password: string, userAgent: string): Promise<TokenData> {
     const user = await UserService.findByLoginOrEmail(login)
 
@@ -48,6 +62,12 @@ class AuthService {
     return this.generateToken(user, userAgent)
   }
 
+  /**
+   * Refresh token method
+   * @param {string} refreshToken user's refresh token 
+   * @param {string} userAgent user's user agent 
+   * @returns {TokenData} tokenized user info
+   */
   async refresh(refreshToken: string, userAgent: string): Promise<TokenData>  {
     if (!refreshToken) throw ApiError.Unauthorized()
 
@@ -61,9 +81,13 @@ class AuthService {
     return this.generateToken(userFromDb, userAgent)
   }
 
+  /**
+   * Activation account method
+   * @param {string} activationLink user's activation link 
+   */
   async activate(activationLink: string) {
     const user = await UserService.findById(activationLink)
-    if (!user) throw ApiError.BadRequest('Некорректная ссылка активации')
+    if (!user) return ApiError.BadRequest('Некорректная ссылка активации')
 
     await db.user.update({
       where: { id: activationLink },
@@ -71,10 +95,21 @@ class AuthService {
     })
   }
 
+  /**
+   * Logout method
+   * @param {string} refreshToken user's refresh token 
+   * @param {string} userAgent user's user agent 
+   */
   async logout(refreshToken: string, userAgent: string) {
     await TokenService.removeToken(refreshToken, userAgent)
   }
 
+  /**
+   * Token generation method
+   * @param {string} refreshToken user's refresh token 
+   * @param {string} userAgent user's user agent 
+   * @returns {TokenData} tokenized user info
+   */
   async generateToken(user: UserWithPassword, userAgent: string): Promise<TokenData> {
     const { password, ...userData } = user
     const tokens = TokenService.generateToken({...userData})

@@ -1,25 +1,25 @@
-import ColumnService from "../Services/Column"
+import CommentService from "../Services/Comment"
 import { Response } from "express"
 import CustomRequest from "../Models/CustomRequest"
 
 import ApiError from "../Exceptions/ApiError"
 
-/** Column controller */
-class ColumnController {
+/** Comment controller */
+class CommentController {
 
   /**
-   * Column create endpoint
+   * Comment create endpoint
    * @param {CustomRequest} req request object
    * @param {Response} res response object
    * @param {Function} next callback function
    * @returns {Response} Response object
    */
   async create(req: CustomRequest, res: Response, next: Function) {
-    const { name } = req.body
-    const { workspace } = req
+    const { id: taskId } = req.params
+    const { id } = req.user
+    const { text } = req.body
     try {
-      if (!name) return ApiError.BadRequest('Не указано название статуса')
-      await ColumnService.create(name, workspace)
+      await CommentService.create(taskId, id, text)
       return res.status(200).send()
     } catch (e) {
       next(e)
@@ -27,17 +27,19 @@ class ColumnController {
   }
 
   /**
-   * Column update endpoint
+   * Comment update endpoint
    * @param {CustomRequest} req request object
    * @param {Response} res response object
    * @param {Function} next callback function
    * @returns {Response} Response object
    */
   async update(req: CustomRequest, res: Response, next: Function) {
-    const { id } = req.params
-    const { name } = req.body
+    const { id: taskId, commentId } = req.params
+    const { text } = req.body
     try {
-      await ColumnService.update(id, name)
+      const isCommentIdValid = await CommentService.isTaskHasComment(taskId, commentId)
+      if (!isCommentIdValid) ApiError.BadRequest('Ошибка в индексах сущностей')
+      await CommentService.update(commentId, text)
       return res.status(200).send()
     } catch (e) {
       next(e)
@@ -45,16 +47,18 @@ class ColumnController {
   }
 
   /**
-   * Column delete endpoint
+   * Comment delete endpoint
    * @param {CustomRequest} req request object
    * @param {Response} res response object
    * @param {Function} next callback function
    * @returns {Response} Response object
    */
   async delete(req: CustomRequest, res: Response, next: Function) {
-    const { id } = req.params
+    const { id: taskId, commentId } = req.params
     try {
-      await ColumnService.delete(id)
+      const isCommentIdValid = await CommentService.isTaskHasComment(taskId, commentId)
+      if (!isCommentIdValid) ApiError.BadRequest('Ошибка в индексах сущностей')
+      await CommentService.delete(commentId)
       return res.status(200).send()
     } catch (e) {
       next(e)
@@ -62,4 +66,4 @@ class ColumnController {
   }
 }
 
-export default new ColumnController()
+export default new CommentController()

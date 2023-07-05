@@ -3,25 +3,44 @@ import { Response } from "express"
 import CustomRequest from "../Models/CustomRequest"
 
 import ApiError from "../Exceptions/ApiError"
+import TaskService from "../Services/Task"
 
+/** Desk controller */
 class DeskController {
 
+  /**
+   * Select a desk with tasks by id endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async selectOne(req: CustomRequest, res: Response, next: Function) {
     const { id } = req.params
     try {
       const desk = await DeskService.selectOne(id)
-      return res.status(200).json(desk)
+      const tasks = await TaskService.selectFromDesk(desk.id)
+      return res.status(200).json({
+        ...desk,
+        tasks
+      })
     } catch (e) {
       next(e)
     }
   }
 
+  /**
+   * Desk create endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async create(req: CustomRequest, res: Response, next: Function) {
-    console.log(req.body);
     const { name, isCurrent } = req.body
     const { workspace } = req
     try {
-      if (!name) throw ApiError.BadRequest('Не указано название доски')
+      if (!name) return ApiError.BadRequest('Не указано название доски')
       await DeskService.create(name, workspace, isCurrent)
       return res.status(200).send()
     } catch (e) {
@@ -29,6 +48,13 @@ class DeskController {
     }
   }
 
+  /**
+   * Desk update endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async update(req: CustomRequest, res: Response, next: Function) {
     const { id } = req.params
     const { name } = req.body
@@ -40,6 +66,13 @@ class DeskController {
     }
   }
 
+  /**
+   * Set desk current endpoint endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async setCurrent(req: CustomRequest, res: Response, next: Function) {
     const { id } = req.params
     const { workspace } = req
@@ -51,6 +84,13 @@ class DeskController {
     }
   }
 
+  /**
+   * Desk delete endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async delete(req: CustomRequest, res: Response, next: Function) {
     const { id } = req.params
     try {

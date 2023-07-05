@@ -1,11 +1,21 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
 import AuthService from '../Services/Auth'
+import CustomRequest from '../Models/CustomRequest';
 
+/** Authorization controller */
 class AuthController {
-  async registration(req: Request<{},{},{ email: string, password:string }>, res: Response, next: Function) {
+
+  /**
+   * Registration endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
+  async registration(req: CustomRequest, res: Response, next: Function) {
     try {
-      const {email, password} = req.body
+      const { email, password } = req.body
       await AuthService.registration(email, password)
       return res.status(200).json()
     } catch (e) {
@@ -13,11 +23,18 @@ class AuthController {
     }
   }
 
-  async login(req: Request<{},{},{ login: string, password:string }>, res: Response, next: Function) {
+  /**
+   * Login endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
+  async login(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']
       if (!userAgent) return res.status(300).send('Invalid user-agent')
-      const {login, password} = req.body
+      const { login, password } = req.body
       const userData = await AuthService.login(login, password, userAgent)
       res.cookie('refresh-token', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
       return res.json(userData)
@@ -26,7 +43,14 @@ class AuthController {
     }
   }
 
-  async logout(req: Request, res: Response, next: Function) {
+  /**
+   * Logout endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
+  async logout(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']
       if (!userAgent) return res.status(300).send('Invalid user-agent')
@@ -38,7 +62,14 @@ class AuthController {
     }
   }
 
-  async activate(req: Request<{ link: string }, {}, {}>, res: Response, next: Function) {
+  /**
+   * Account activation endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
+  async activate(req: CustomRequest, res: Response, next: Function) {
     try {
       const activationLink = req.params.link
       await AuthService.activate(activationLink)
@@ -48,7 +79,14 @@ class AuthController {
     }
   }
 
-  async refresh(req: Request, res: Response, next: Function) {
+  /**
+   * Token refresh endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
+  async refresh(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']
       if (!userAgent) return res.status(300).send('Invalid user-agent')

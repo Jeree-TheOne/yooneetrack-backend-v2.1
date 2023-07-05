@@ -3,5 +3,7 @@ export default interface History {
   updatedFields: string[];
   fieldsValues: string[];
   previousValues: string[];
-  createdAt: Date
+  createdAt: Date;
+  userId: string;
+  type: 'history'
 }

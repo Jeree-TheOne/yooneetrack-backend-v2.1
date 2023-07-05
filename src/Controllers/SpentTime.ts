@@ -1,25 +1,25 @@
-import ColumnService from "../Services/Column"
+import SpentTimeService from "../Services/SpentTime"
 import { Response } from "express"
 import CustomRequest from "../Models/CustomRequest"
 
 import ApiError from "../Exceptions/ApiError"
 
-/** Column controller */
-class ColumnController {
+/** Spent time controller */
+class SpentTimeController {
 
   /**
-   * Column create endpoint
+   * Spent time create endpoint
    * @param {CustomRequest} req request object
    * @param {Response} res response object
    * @param {Function} next callback function
    * @returns {Response} Response object
    */
   async create(req: CustomRequest, res: Response, next: Function) {
-    const { name } = req.body
-    const { workspace } = req
+    const { id: taskId } = req.params
+    const { id } = req.user
+    const { spentTime } = req.body
     try {
-      if (!name) return ApiError.BadRequest('Не указано название статуса')
-      await ColumnService.create(name, workspace)
+      await SpentTimeService.create(taskId, id, spentTime)
       return res.status(200).send()
     } catch (e) {
       next(e)
@@ -27,17 +27,19 @@ class ColumnController {
   }
 
   /**
-   * Column update endpoint
+   * Spent time update endpoint
    * @param {CustomRequest} req request object
    * @param {Response} res response object
    * @param {Function} next callback function
    * @returns {Response} Response object
    */
   async update(req: CustomRequest, res: Response, next: Function) {
-    const { id } = req.params
-    const { name } = req.body
+    const { id: taskId, spentTimeId } = req.params
+    const { spentTime } = req.body
     try {
-      await ColumnService.update(id, name)
+      const isSpentTimeIdValid = await SpentTimeService.isTaskHasSpentTime(taskId, spentTimeId)
+      if (!isSpentTimeIdValid) ApiError.BadRequest('Ошибка в индексах сущностей')
+      await SpentTimeService.update(spentTimeId, spentTime)
       return res.status(200).send()
     } catch (e) {
       next(e)
@@ -45,16 +47,18 @@ class ColumnController {
   }
 
   /**
-   * Column delete endpoint
+   * Spent time delete endpoint
    * @param {CustomRequest} req request object
    * @param {Response} res response object
    * @param {Function} next callback function
    * @returns {Response} Response object
    */
   async delete(req: CustomRequest, res: Response, next: Function) {
-    const { id } = req.params
+    const { id: taskId, spentTimeId } = req.params
     try {
-      await ColumnService.delete(id)
+      const isSpentTimeIdValid = await SpentTimeService.isTaskHasSpentTime(taskId, spentTimeId)
+      if (!isSpentTimeIdValid) ApiError.BadRequest('Ошибка в индексах сущностей')
+      await SpentTimeService.delete(spentTimeId)
       return res.status(200).send()
     } catch (e) {
       next(e)
@@ -62,4 +66,4 @@ class ColumnController {
   }
 }
 
-export default new ColumnController()
+export default new SpentTimeController()

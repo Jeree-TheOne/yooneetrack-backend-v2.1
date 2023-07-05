@@ -1,25 +1,33 @@
 import UserService from "../Services/User"
 import FileService from "../Services/File"
 import { Request, Response } from "express"
-import { uploadAvatar } from "../utils/multer"
+import { uploadAvatar } from "../Utils/multer"
 import ApiError from "../Exceptions/ApiError"
 import CustomRequest from "../Models/CustomRequest"
 
-/** Controller for user  */
+/** User controller  */
 class UserController {
 
+  /**
+   * Upload profile picture endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async uploadAvatar(req: CustomRequest, res: Response, next: Function) {
     try {
       uploadAvatar(req, res, async (err) => {
         if (err) {
-          throw ApiError.BadRequest(err.message)
+          return ApiError.BadRequest(err.message)
         } else if (req.file) {
           const userAgent = req.headers['user-agent']
           if (!userAgent) return res.status(300).send('Invalid user-agent')
           
-          const { id } = req.user
-          const imageId = await FileService.uploadSingle(req.file.path)
+          const { id, avatar } = req.user
+          const imageId =  await FileService.uploadSingle(req.file.path)
           const data = await UserService.changeAvatar(id, imageId, userAgent)
+          if (avatar !== 'images/avatar.jpg') await FileService.delete(avatar)
           return res.status(200).json(data)
         } else {
           return ApiError.BadRequest('Нет фотографии')
@@ -30,18 +38,33 @@ class UserController {
     }
   }
 
+  /**
+   * Remove profile picture endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async removeAvatar(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']
       if (!userAgent) return res.status(300).send('Invalid user-agent')
-      const { id } = req.user
-      await UserService.removeAvatar(id, userAgent)
-      return res.status(200).send()
+      const { id, avatar } = req.user
+      const data = await UserService.removeAvatar(id, userAgent)
+      if (avatar !== 'images/avatar.jpg') await FileService.delete(avatar)
+      return res.status(200).json(data)
     } catch (e) {
       next(e)
     }
   }
 
+  /**
+   * Change user name endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async changeName(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']
@@ -56,6 +79,13 @@ class UserController {
     }
   }
 
+  /**
+   * Change user login endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async changeLogin(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']
@@ -70,6 +100,13 @@ class UserController {
     }
   }
 
+  /**
+   * Block user endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async blockUser(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']
@@ -84,6 +121,13 @@ class UserController {
     }
   }
 
+  /**
+   * Premium user endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async premiumUser(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']
@@ -98,6 +142,13 @@ class UserController {
     }
   }
 
+  /**
+   * Change user password endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async changePassword(req: CustomRequest, res: Response, next: Function) {
     try {
       const userAgent = req.headers['user-agent']

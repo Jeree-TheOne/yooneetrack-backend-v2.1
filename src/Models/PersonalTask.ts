@@ -7,4 +7,5 @@ export default interface PersonalTask {
   isDone: boolean;
   isImportant: boolean;
   isUrgent: boolean;
+  files: string[];
 }

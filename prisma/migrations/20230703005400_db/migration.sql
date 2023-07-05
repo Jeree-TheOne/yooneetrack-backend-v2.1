@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('CREATOR', 'ADMIN', 'USER', 'VIEWER');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -13,14 +16,6 @@ CREATE TABLE "User" (
     "imageId" TEXT NOT NULL DEFAULT '21dee9ec-0e79-4dc0-9577-5052343f63fe',
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Role" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-
-    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -65,7 +60,7 @@ CREATE TABLE "Member" (
     "isActivated" BOOLEAN NOT NULL DEFAULT false,
     "isBlocked" BOOLEAN NOT NULL DEFAULT false,
     "workspaceId" TEXT NOT NULL,
-    "roleId" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'USER',
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "Member_pkey" PRIMARY KEY ("id")
@@ -128,7 +123,6 @@ CREATE TABLE "Comment" (
 -- CreateTable
 CREATE TABLE "SpentTime" (
     "id" TEXT NOT NULL,
-    "currentTimeSpent" INTEGER NOT NULL,
     "spentTime" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
@@ -204,9 +198,6 @@ CREATE UNIQUE INDEX "User_login_key" ON "User"("login");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Token_refreshToken_key" ON "Token"("refreshToken");
 
 -- CreateIndex
@@ -247,9 +238,6 @@ ALTER TABLE "Column" ADD CONSTRAINT "Column_workspaceId_fkey" FOREIGN KEY ("work
 
 -- AddForeignKey
 ALTER TABLE "Member" ADD CONSTRAINT "Member_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Member" ADD CONSTRAINT "Member_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Member" ADD CONSTRAINT "Member_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

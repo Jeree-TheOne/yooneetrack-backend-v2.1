@@ -1,11 +1,27 @@
 import ApiError from "../Exceptions/ApiError"
-import { db } from "../utils/db"
+import { db } from "../Utils/db"
+
+import SocketService from './Socket'
+import TagService from './Tag'
+import TaskTypeService from './TaskType'
+import ColumnService from './Column'
+import RowService from './Row'
+import MemberService from './Member'
+import DeskService from './Desk'
 
 import Workspace from "../Models/Workspace"
 import WorkspaceWithData from "../Models/WorkspaceWithData"
 
+/** Service for work with Workspace */
 class WorkspaceService {
-  async create(name: string, user: string): Promise<Workspace> {
+
+  /**
+   * Creating a workspace method
+   * @param {string} name workspace name
+   * @param {string} userId creator of the workspace 
+   * @returns {Workspace} created workspace
+   */
+  async create(name: string, userId: string): Promise<Workspace> {
     return await db.workspace.create({ 
       data: { 
         name,
@@ -38,101 +54,68 @@ class WorkspaceService {
         },
         members: {
           create: [
-            { userId: user, roleId: '66773b63-d458-49e0-9a13-edd156069521', isActivated: true }
+            { userId, role: 'CREATOR', isActivated: true }
           ]
         }
       },
     })
   }
 
+  /**
+   * Getting all workspaces that available to the user
+   * @param {string} userId user id 
+   * @returns {Workspace[]} workspaces available to the user
+   */
   async selectAvailable(userId: string): Promise<Workspace[]>{
     return await db.workspace.findMany({ where: { members: { some: { userId } } } })
   }
 
+  /**
+   * Select workspace by id
+   * @param {string} id workspace id
+   * @returns {WorkspaceWithData} workspace with information about rows, columns and etc.
+   */
   async selectOne(id: string): Promise<WorkspaceWithData> {
-    const { members, ...data} = await db.workspace.findFirst({ 
-      where: { id },
-      include: {
-        members: {
-          where: { AND: [ { isActivated: true }, { isBlocked: false } ] },
-          select: {
-            id: true,
-            user: {
-              select: {
-                id: true,
-                email: true,
-                login: true,
-                firstName: true,
-                secondName: true,
-                image: {
-                  select: {
-                    path: true
-                  }
-                }
-              }
-            },
-            role: {
-              select: {
-                name: true
-              }
-            }
-          }
-        },
-        tags: {
-          select: {
-            id: true,
-            name: true,
-            background: true,
-            color: true
-          }
-        },
-        taskTypes: {
-          select: {
-            id: true,
-            name: true,
-          }
-        },
-        rows: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        columns: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        desks: {
-          select: {
-            id: true,
-            name: true,
-            isCurrent: true
-          },
-          orderBy: { isCurrent: 'desc' }
+    const [workspace, tags, rows, columns, members, taskTypes, desks] = await Promise.all([
+      await db.workspace.findFirst({ 
+        where: { id },
+        select: {
+          id: true,
+          name: true
         }
-      } 
-    })
+      }),
+      TagService.selectFromWorkspace(id),
+      RowService.selectFromWorkspace(id),
+      ColumnService.selectFromWorkspace(id),
+      MemberService.selectFromWorkspace(id),
+      TaskTypeService.selectFromWorkspace(id),
+      DeskService.selectFromWorkspace(id),
+    ])
 
     return {
-      ...data,
-      members: members.map(member => { 
-        const { user, role: roleObj } = member
-        const { name: role } = roleObj
-        const { id, email, login, firstName, secondName, image } = user
-        const { path: avatar } = image
-        return {
-          id, email, login, firstName, secondName, role, avatar
-        } 
-      })
+      ...workspace,
+      tags,
+      rows,
+      columns,
+      members,
+      taskTypes,
+      desks
     }
   }
-
+  /**
+   * Updating workspace name method
+   * @param {string} id workspace id 
+   * @param {string} name workspace name 
+   */
   async update(id: string, name: string): Promise<void> {
-    await db.workspace.update({ where: { id } , data: { name } })
+    const workspace = await db.workspace.update({ where: { id } , data: { name } })
+    SocketService.updateWorkspace(workspace)
   }
 
+  /**
+   * Deleting workspace method
+   * @param {string} id workspace id 
+   */
   async delete(id: string): Promise<void> {
     await db.workspace.delete({ where: { id } })
   }

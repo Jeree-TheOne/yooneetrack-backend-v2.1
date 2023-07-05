@@ -4,13 +4,21 @@ import CustomRequest from "../Models/CustomRequest"
 
 import ApiError from "../Exceptions/ApiError"
 
+/** Tag controller */
 class TagController {
 
+  /**
+   * Tag create endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async create(req: CustomRequest, res: Response, next: Function) {
     const { name, background, color } = req.body
     const { workspace } = req
     try {
-      if (!name) throw ApiError.BadRequest('Не указано название тэга')
+      if (!name) return ApiError.BadRequest('Не указано название тэга')
       await TagService.create(name, background, color, workspace)
       return res.status(200).send()
     } catch (e) {
@@ -18,6 +26,13 @@ class TagController {
     }
   }
 
+  /**
+   * Tag update endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async update(req: CustomRequest, res: Response, next: Function) {
     const { id } = req.params
     const { name, background, color } = req.body
@@ -29,6 +44,13 @@ class TagController {
     }
   }
 
+  /**
+   * Tag delete endpoint
+   * @param {CustomRequest} req request object
+   * @param {Response} res response object
+   * @param {Function} next callback function
+   * @returns {Response} Response object
+   */
   async delete(req: CustomRequest, res: Response, next: Function) {
     const { id } = req.params
     try {
