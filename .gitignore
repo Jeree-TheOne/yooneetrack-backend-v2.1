@@ -1,5 +1,5 @@
 node_modules
 storage/*/*
 !storage/images/avatar.jpg
-
+!storage/files/file.png
 .env.prod
