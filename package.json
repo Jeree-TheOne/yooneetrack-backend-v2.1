@@ -37,9 +37,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=dev nodemon src/index.ts",
-    "prod": "NODE_ENV=prod nodemon src/index.ts",
-    "prisma": "NODE_ENV=prod npx prisma migrate dev --name init"
+    "dev": "nodemon src/index.ts",
+    "prisma": "npx prisma migrate dev --name init"
   },
   "repository": {
     "type": "git",

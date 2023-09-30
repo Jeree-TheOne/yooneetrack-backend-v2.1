@@ -1,5 +1,4 @@
 import * as dotenv from "dotenv";
-dotenv.config({ path: `.env.${process.env.NODE_ENV || "dev"}`})
 
 import express from "express";
 import cors from "cors"
@@ -11,6 +10,7 @@ import cookieParser from "cookie-parser"
 
 import socket from "./socket";
 
+dotenv.config({ path: '.env'})
 if (!process.env.PORT) process.exit(1)
 
 const PORT: number = parseInt(process.env.PORT as string, 10)
