@@ -56,7 +56,7 @@ class AuthService {
     if (!user.isActivated) throw ApiError.BadRequest('Аккаунт не активирован')
 
     const isPassEquals = await bcrypt.compare(password, user.password)
-
+    
     if (!isPassEquals) throw ApiError.BadRequest('Некорректный пароль')
 
     return this.generateToken(user, userAgent)

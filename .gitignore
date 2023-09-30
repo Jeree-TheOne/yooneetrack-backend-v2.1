@@ -1,5 +1,6 @@
 node_modules
 storage/*/*
-!storage/images/avatar.jpg
+!storage/images/avatar.png
 !storage/files/file.png
 .env.prod
+*/.DS_Store

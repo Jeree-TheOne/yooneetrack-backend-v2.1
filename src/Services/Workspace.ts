@@ -1,4 +1,3 @@
-import ApiError from "../Exceptions/ApiError"
 import { db } from "../Utils/db"
 
 import SocketService from './Socket'
@@ -27,29 +26,29 @@ class WorkspaceService {
         name,
         columns: { 
           create: [
-            { name: 'Нужно сделать' },
-            { name: 'В процессе' },
-            { name: 'Готово' },
+            { name: 'New' },
+            { name: 'In process' },
+            { name: 'Done' },
           ]
         },
         rows: { 
           create: [
-            { name: 'Задачи'}
+            { name: 'Tasks'}
           ]
         },
         tags: {
           create: [
-            { name: 'Важное', background: '#FF0000', color: '#000000' }
+            { name: 'Important', background: '#FF0000', color: '#000000' }
           ]
         },
         desks: {
           create: [
-            { name: 'Доска', isCurrent: true }
+            { name: 'Desk', isCurrent: true }
           ]
         },
         taskTypes: {
           create: [
-            { name: 'Задача' }
+            { name: 'Task' }
           ]
         },
         members: {

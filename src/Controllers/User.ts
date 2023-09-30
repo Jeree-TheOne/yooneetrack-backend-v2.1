@@ -27,7 +27,7 @@ class UserController {
           const { id, avatar } = req.user
           const imageId =  await FileService.uploadSingle(req.file.path)
           const data = await UserService.changeAvatar(id, imageId, userAgent)
-          if (avatar !== 'images/avatar.jpg') await FileService.delete(avatar)
+          if (avatar !== 'images/avatar.png') await FileService.delete(avatar)
           return res.status(200).json(data)
         } else {
           return ApiError.BadRequest('Нет фотографии')
@@ -51,7 +51,7 @@ class UserController {
       if (!userAgent) return res.status(300).send('Invalid user-agent')
       const { id, avatar } = req.user
       const data = await UserService.removeAvatar(id, userAgent)
-      if (avatar !== 'images/avatar.jpg') await FileService.delete(avatar)
+      if (avatar !== 'images/avatar.png') await FileService.delete(avatar)
       return res.status(200).json(data)
     } catch (e) {
       next(e)
